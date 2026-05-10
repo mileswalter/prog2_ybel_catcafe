@@ -1,0 +1,41 @@
+name: Cat-Cafe CI Pipeline
+
+# Die Pipeline startet bei jedem Push auf den Hauptzweig
+on:
+    push:
+        branches: [ "main", "master" ]
+
+jobs:
+    check-project:
+        runs-on: ubuntu-latest
+
+        steps:
+            # 1. Den Code vom Repository auf den GitHub-Server holen
+            - name: Checkout Code
+              uses: actions/checkout@v4
+
+            # Java 17 (oder höher) bereitstellen
+            - name: Set up JDK 17
+              uses: actions/setup-java@v4
+              with:
+                  java-version: '17'
+                  distribution: 'temurin'
+                  cache: gradle
+
+            # Gradle Wrapper ausführbar machen
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+
+            # SCHRITT 1: Baut das Projekt (Kompiliert den Code)
+            - name: 1. Build project
+              run: ./gradlew assemble
+
+            # SCHRITT 2: Führt deine 10 JUnit-Tests aus
+            - name: 2. Run JUnit Tests
+              run: ./gradlew test
+
+            # SCHRITT 3: Überprüft die Formatierung (Spotless)
+            # Hinweis: Falls dein Code nicht richtig formatiert ist,
+            # bricht dieser Schritt mit einer Fehlermeldung ab.
+            - name: 3. Check Format (Spotless)
+              run: ./gradlew spotlessCheck
